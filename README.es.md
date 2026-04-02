@@ -1,112 +1,107 @@
-# Plantilla de Proyecto de Ciencia de Datos
+# Optimización de algoritmos con Boosting para predicción de diabetes
 
-Esta plantilla está diseñada para impulsar proyectos de ciencia de datos proporcionando una configuración básica para conexiones de base de datos, procesamiento de datos, y desarrollo de modelos de aprendizaje automático. Incluye una organización estructurada de carpetas para tus conjuntos de datos y un conjunto de paquetes de Python predefinidos necesarios para la mayoría de las tareas de ciencia de datos.
+## Descripción del proyecto
 
-## Estructura
+Este proyecto analiza el uso de un modelo de boosting para predecir diabetes en un problema de clasificación supervisada. El trabajo continúa el recorrido realizado previamente con árbol de decisión y random forest, reutilizando el mismo dataset procesado para poder comparar resultados de forma consistente.
 
-El proyecto está organizado de la siguiente manera:
+El objetivo no fue solo entrenar un nuevo algoritmo, sino comprobar si boosting aportaba una mejora real, analizar el efecto de sus hiperparámetros y decidir, con base en evidencia, qué modelo conviene conservar.
 
-- **`src/app.py`** → Script principal de Python donde correrá tu proyecto.
-- **`src/explore.ipynb`** → Notebook para exploración y pruebas. Una vez finalizada la exploración, migra el código limpio a `app.py`.
-- **`src/utils.py`** → Funciones auxiliares, como conexión a bases de datos.
-- **`requirements.txt`** → Lista de paquetes de Python necesarios.
-- **`models/`** → Contendrá tus clases de modelos SQLAlchemy.
-- **`data/`** → Almacena los datasets en diferentes etapas:
-  - **`data/raw/`** → Datos sin procesar.
-  - **`data/interim/`** → Datos transformados temporalmente.
-  - **`data/processed/`** → Datos listos para análisis.
+## Objetivo
 
+Construir un modelo de boosting, optimizar sus hiperparámetros y compararlo con los modelos anteriores del recorrido para elegir la alternativa más adecuada en este problema de predicción de diabetes.
 
-## ⚡ Configuración Inicial en Codespaces (Recomendado)
+## Dataset
 
-No es necesario realizar ninguna configuración manual, ya que **Codespaces se configura automáticamente** con los archivos predefinidos que ha creado la academia para ti. Simplemente sigue estos pasos:
+Se utiliza el conjunto de datos procesado en el proyecto anterior, ya dividido en entrenamiento y prueba.
 
-1. **Espera a que el entorno se configure automáticamente**.
-   - Todos los paquetes necesarios y la base de datos se instalarán por sí mismos.
-   - El `username` y `db_name` creados automáticamente están en el archivo **`.env`** en la raíz del proyecto.
-2. **Una vez que Codespaces esté listo, puedes comenzar a trabajar inmediatamente**.
+Archivos utilizados:
 
+- `X_train_CON_outliers.csv`
+- `X_test_CON_outliers.csv`
+- `y_train.csv`
+- `y_test.csv`
 
-## 💻 Configuración en Local (Solo si no puedes usar Codespaces)
+Variables predictoras empleadas:
 
-**Prerrequisitos**
+- `Pregnancies`
+- `Glucose`
+- `BloodPressure`
+- `SkinThickness`
+- `Insulin`
+- `BMI`
+- `DiabetesPedigreeFunction`
+- `Age`
 
-Asegúrate de tener Python 3.11+ instalado en tu máquina. También necesitarás pip para instalar los paquetes de Python.
+## Metodología
 
-**Instalación**
+El proyecto sigue este flujo de trabajo:
 
-Clona el repositorio del proyecto en tu máquina local.
+1. carga del dataset procesado;
+2. entrenamiento de un modelo baseline de boosting;
+3. exploración de hiperparámetros (`n_estimators`, `learning_rate`, `max_depth`);
+4. evaluación del modelo optimizado con métricas de clasificación;
+5. comparación final con árbol de decisión y random forest;
+6. conclusión argumentada sobre el modelo más conveniente.
 
-Navega hasta el directorio del proyecto e instala los paquetes de Python requeridos:
+## Modelos comparados
 
-```bash
-pip install -r requirements.txt
-```
+- Árbol de decisión
+- Random Forest
+- Boosting (`XGBClassifier`)
 
-**Crear una base de datos (si es necesario)**
+## Principales resultados
 
-Crea una nueva base de datos dentro del motor Postgres personalizando y ejecutando el siguiente comando: 
+### Boosting baseline
+- Accuracy: **0.7468**
 
-```bash
-$ psql -U postgres -c "DO \$\$ BEGIN 
-    CREATE USER mi_usuario WITH PASSWORD 'mi_contraseña'; 
-    CREATE DATABASE mi_base_de_datos OWNER mi_usuario; 
-END \$\$;"
-```
-Conéctate al motor Postgres para usar tu base de datos, manipular tablas y datos: 
+### Boosting optimizado
+- Mejor configuración encontrada:
+  - `n_estimators = 50`
+  - `learning_rate = 0.2`
+  - `max_depth = 3`
+- Accuracy: **0.7662**
 
-```bash
-$ psql -U mi_usuario -d mi_base_de_datos
-```
+### Comparación final entre modelos
+- **Random Forest**
+  - Accuracy: **0.7727**
+  - Precision clase 1: **0.8333**
+  - Recall clase 1: **0.5085**
+  - F1 clase 1: **0.6316**
 
-¡Una vez que estés dentro de PSQL podrás crear tablas, hacer consultas, insertar, actualizar o eliminar datos y mucho más!
+- **Decision Tree**
+  - Accuracy: **0.7662**
+  - Precision clase 1: **0.6885**
+  - Recall clase 1: **0.7119**
+  - F1 clase 1: **0.7000**
 
-**Variables de entorno**
+- **Boosting**
+  - Accuracy: **0.7662**
+  - Precision clase 1: **0.7347**
+  - Recall clase 1: **0.6102**
+  - F1 clase 1: **0.6667**
 
-Crea un archivo .env en el directorio raíz del proyecto para almacenar tus variables de entorno, como tu cadena de conexión a la base de datos:
+## Interpretación general
 
-```makefile
-DATABASE_URL="postgresql://<USUARIO>:<CONTRASEÑA>@<HOST>:<PUERTO>/<NOMBRE_BD>"
+Random Forest fue el modelo con mejor rendimiento global en términos de `accuracy` y también el que mostró mayor `precision` para la clase positiva. Esto lo convierte en la opción más sólida dentro del alcance del proyecto.
 
-#example
-DATABASE_URL="postgresql://mi_usuario:mi_contraseña@localhost:5432/mi_base_de_datos"
-```
+El árbol de decisión, sin embargo, obtuvo el mejor `recall` y el mejor `f1-score` para la clase `1`, lo que indica una mayor capacidad para detectar casos positivos de diabetes.
 
-## Ejecutando la Aplicación
+Boosting mejoró respecto a su baseline inicial, lo que confirma que el ajuste de hiperparámetros sí tuvo efecto. Aun así, en la comparación final no consiguió superar con claridad a Random Forest en rendimiento general ni al árbol de decisión en sensibilidad hacia la clase positiva.
 
-Para ejecutar la aplicación, ejecuta el script app.py desde la raíz del directorio del proyecto:
+## Conclusión
 
-```bash
-python src/app.py
-```
+El modelo elegido para este proyecto es **Random Forest**, porque ofreció el mejor equilibrio general entre rendimiento global y precisión en la clase positiva.
 
-## Añadiendo Modelos
+Aunque el árbol de decisión detectó mejor los casos positivos y boosting mostró una mejora respecto a su versión inicial, Random Forest fue la alternativa más consistente dentro del conjunto de pruebas realizadas.
 
-Para añadir clases de modelos SQLAlchemy, crea nuevos archivos de script de Python dentro del directorio models/. Estas clases deben ser definidas de acuerdo a tu esquema de base de datos.
+## Estructura del repositorio
 
-Definición del modelo de ejemplo (`models/example_model.py`):
-
-```py
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-
-Base = declarative_base()
-
-class ExampleModel(Base):
-    __tablename__ = 'example_table'
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True)
-```
-
-## Trabajando con Datos
-
-Puedes colocar tus conjuntos de datos brutos en el directorio data/raw, conjuntos de datos intermedios en data/interim, y los conjuntos de datos procesados listos para el análisis en data/processed.
-
-Para procesar datos, puedes modificar el script app.py para incluir tus pasos de procesamiento de datos, utilizando pandas para la manipulación y análisis de datos.
-
-## Contribuyentes
-
-Esta plantilla fue construida como parte del [Data Science and Machine Learning Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning) de 4Geeks Academy por [Alejandro Sanchez](https://twitter.com/alesanchezr) y muchos otros contribuyentes. Descubre más sobre [los programas BootCamp de 4Geeks Academy](https://4geeksacademy.com/us/programs) aquí.
-
-Otras plantillas y recursos como este se pueden encontrar en la página de GitHub de la escuela.
+```text
+gondelles-boosting-algorithm-project/
+├── data/
+│   └── processed/
+├── models/
+├── src/
+│   └── boosting_diabetes.ipynb
+├── README.md
+└── requirements.txt
